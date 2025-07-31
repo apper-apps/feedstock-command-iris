@@ -1,0 +1,27 @@
+[
+  {
+    "Id": 1,
+    "name": "All Products",
+    "count": 12
+  },
+  {
+    "Id": 2,
+    "name": "Dairy Feed",
+    "count": 3
+  },
+  {
+    "Id": 3,
+    "name": "Beef Feed",
+    "count": 3
+  },
+  {
+    "Id": 4,
+    "name": "Calf Feed",
+    "count": 3
+  },
+  {
+    "Id": 5,
+    "name": "Supplements",
+    "count": 3
+  }
+]
