@@ -1,9 +1,12 @@
-import { cn } from "@/utils/cn";
+import React, { useState } from "react";
 import ApperIcon from "@/components/ApperIcon";
-import Button from "@/components/atoms/Button";
 import Badge from "@/components/atoms/Badge";
-
+import Button from "@/components/atoms/Button";
+import { cn } from "@/utils/cn";
 const ProductCard = ({ product, onAddToCart, className }) => {
+  const [imageLoading, setImageLoading] = useState(true);
+  const [imageError, setImageError] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
   const getStockVariant = (status) => {
     switch (status) {
       case "In Stock":
@@ -24,23 +27,73 @@ const ProductCard = ({ product, onAddToCart, className }) => {
     }).format(price);
   };
 
-  const handleAddToCart = () => {
+const handleAddToCart = () => {
     if (product.stockStatus !== "Out of Stock") {
       onAddToCart(product);
     }
   };
 
+  const handleImageLoad = () => {
+    setImageLoading(false);
+    setImageError(false);
+  };
+
+  const handleImageError = () => {
+    setImageLoading(false);
+    setImageError(true);
+  };
+
+  const handleImageRetry = () => {
+    if (retryCount < 3) {
+      setImageLoading(true);
+      setImageError(false);
+      setRetryCount(prev => prev + 1);
+      // Force image reload by adding timestamp
+      const img = new Image();
+      img.onload = handleImageLoad;
+      img.onerror = handleImageError;
+      img.src = `${product.imageUrl}&retry=${Date.now()}`;
+    }
+  };
   return (
     <div className={cn(
       "bg-white rounded-lg shadow-soft hover:shadow-medium transition-all duration-300 transform hover:scale-102 overflow-hidden group",
       className
     )}>
-      <div className="relative overflow-hidden">
-        <img
-          src={product.imageUrl}
-          alt={product.name}
-          className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-        />
+<div className="relative overflow-hidden">
+        {imageLoading && (
+          <div className="w-full h-48 bg-gradient-to-br from-burlap-100 to-burlap-200 animate-pulse flex items-center justify-center">
+            <ApperIcon name="Image" size={32} className="text-burlap-400" />
+          </div>
+        )}
+        
+        {imageError ? (
+          <div className="w-full h-48 bg-gradient-to-br from-burlap-100 to-burlap-200 flex flex-col items-center justify-center space-y-3">
+            <ApperIcon name="ImageOff" size={28} className="text-burlap-500" />
+            <p className="text-burlap-600 text-sm text-center px-4">Image failed to load</p>
+            {retryCount < 3 && (
+              <button
+                onClick={handleImageRetry}
+                className="text-forest-600 hover:text-forest-700 text-sm font-medium underline"
+              >
+                Try again
+              </button>
+            )}
+          </div>
+        ) : (
+          <img
+            src={product.imageUrl}
+            alt={product.name}
+            loading="lazy"
+            onLoad={handleImageLoad}
+            onError={handleImageError}
+            className={cn(
+              "w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300",
+              imageLoading && "opacity-0"
+            )}
+          />
+        )}
+        
         <div className="absolute top-3 right-3">
           <Badge variant={getStockVariant(product.stockStatus)}>
             {product.stockStatus}
